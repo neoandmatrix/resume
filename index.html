@@ -1,10 +1,47 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html lang="en" style="width:100%; height:100%;">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tushar's Resume</title>
+  <style>
+    html, body { margin: 0; background: #525659; font-family: system-ui, sans-serif; }
+    #bar { position: sticky; top: 0; z-index: 1; display: flex; justify-content: flex-end; padding: 8px 16px; background: #323639; }
+    #bar a { color: #fff; text-decoration: none; font-size: 14px; padding: 6px 12px; border: 1px solid #777; border-radius: 4px; }
+    #pages { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 16px 8px; }
+    canvas { width: 100%; max-width: 900px; height: auto; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
+    #msg { color: #fff; text-align: center; padding: 40px 16px; }
+    #msg a { color: #9cf; }
+  </style>
 </head>
-  <body style="width:100%; height:100%; margin:0;">
-    <iframe src="https://docs.google.com/gview?url=https://raw.githubusercontent.com/neoandmatrix/resume/main/ml-engineering-resume.pdf&embedded=true" style="width:100%; height:100%;" frameborder="0"></iframe>
-  </body>
+<body>
+  <div id="bar"><a href="ml-engineering-resume.pdf" download>Download PDF</a></div>
+  <div id="pages"><div id="msg">Loading resume…</div></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    const PDF_URL = 'ml-engineering-resume.pdf';
+    const container = document.getElementById('pages');
+    const msg = document.getElementById('msg');
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    pdfjsLib.getDocument(PDF_URL).promise.then(async (pdf) => {
+      msg.remove();
+      const scale = Math.min(window.devicePixelRatio || 1, 2) * 2;
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        container.appendChild(canvas);
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      }
+    }).catch(() => {
+      msg.innerHTML = 'Couldn\'t display the resume here. <a href="' + PDF_URL + '">Open the PDF</a>.';
+    });
+  </script>
+</body>
 </html>
